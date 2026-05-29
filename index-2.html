@@ -1,0 +1,2669 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SANTANA Student System</title>
+
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    /* =============================================
+       CSS VARIABLES & RESET
+    ============================================= */
+    :root {
+      --blue-dark:    #0a2d6e;
+      --blue-main:    #1a56db;
+      --blue-mid:     #2563eb;
+      --blue-light:   #3b82f6;
+      --blue-pale:    #dbeafe;
+      --blue-glass:   rgba(26,86,219,0.12);
+      --accent:       #f59e0b;
+      --accent-light: #fef3c7;
+      --success:      #10b981;
+      --danger:       #ef4444;
+      --white:        #ffffff;
+      --gray-50:      #f8fafc;
+      --gray-100:     #f1f5f9;
+      --gray-200:     #e2e8f0;
+      --gray-400:     #94a3b8;
+      --gray-600:     #475569;
+      --gray-800:     #1e293b;
+      --shadow-sm:    0 2px 8px rgba(26,86,219,0.10);
+      --shadow-md:    0 4px 20px rgba(26,86,219,0.18);
+      --shadow-lg:    0 8px 40px rgba(26,86,219,0.22);
+      --radius-sm:    10px;
+      --radius-md:    16px;
+      --radius-lg:    24px;
+      --radius-xl:    32px;
+      --font:         'Poppins', sans-serif;
+      --header-h:     230px;
+      --nav-h:        68px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      font-family: var(--font);
+      background: var(--gray-100);
+      color: var(--gray-800);
+      height: 100%;
+      overflow: hidden; /* handled per screen */
+    }
+
+    /* =============================================
+       APP SHELL — centered mobile container
+    ============================================= */
+    #app {
+      max-width: 450px;
+      width: 100%;
+      min-height: 100dvh;
+      margin: 0 auto;
+      background: var(--white);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* =============================================
+       SCREEN SYSTEM
+    ============================================= */
+    .screen {
+      display: none;
+      flex-direction: column;
+      height: 100dvh;
+      width: 100%;
+      position: absolute;
+      top: 0; left: 0;
+      background: var(--white);
+      z-index: 1;
+      overflow: hidden;
+    }
+    .screen.active { display: flex; }
+
+    /* =============================================
+       AUTH SCREEN
+    ============================================= */
+    #screen-auth {
+      background: linear-gradient(160deg, var(--blue-dark) 0%, var(--blue-main) 55%, var(--blue-light) 100%);
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      z-index: 10;
+    }
+
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 32px;
+      animation: fadeSlideDown 0.6s ease;
+    }
+    .auth-logo .logo-circle {
+      width: 80px; height: 80px;
+      background: var(--white);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    .auth-logo .logo-circle i { font-size: 36px; color: var(--blue-main); }
+    .auth-logo h1 { font-size: 22px; font-weight: 800; color: var(--white); letter-spacing: 1px; }
+    .auth-logo p  { font-size: 11px; color: rgba(255,255,255,0.75); font-weight: 400; margin-top: 4px; }
+
+    .auth-card {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      padding: 28px 24px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      animation: fadeSlideUp 0.5s ease;
+    }
+    .auth-tabs { display: flex; gap: 8px; margin-bottom: 22px; background: var(--gray-100); border-radius: var(--radius-md); padding: 4px; }
+    .auth-tab {
+      flex: 1; padding: 9px; text-align: center; border-radius: 12px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: none; background: transparent; color: var(--gray-400);
+      transition: all 0.25s ease;
+    }
+    .auth-tab.active { background: var(--blue-main); color: var(--white); box-shadow: var(--shadow-sm); }
+
+    .auth-form { display: none; flex-direction: column; gap: 14px; }
+    .auth-form.active { display: flex; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 12px; font-weight: 600; color: var(--gray-600); }
+
+    .input-wrap { position: relative; }
+    .input-wrap i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--gray-400); font-size: 14px; }
+    .input-wrap input,
+    .input-wrap select {
+      width: 100%; padding: 11px 13px 11px 38px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px;
+      color: var(--gray-800); background: var(--gray-50);
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+    }
+    .input-wrap input:focus,
+    .input-wrap select:focus { border-color: var(--blue-main); box-shadow: 0 0 0 3px rgba(26,86,219,0.12); background: var(--white); }
+
+    .role-info { font-size: 10.5px; color: var(--gray-400); background: var(--gray-50); border-radius: 8px; padding: 8px 10px; line-height: 1.6; }
+    .role-info span { font-weight: 600; color: var(--blue-main); }
+
+    .btn-primary {
+      padding: 13px; border: none; border-radius: var(--radius-sm);
+      background: var(--blue-main); color: var(--white);
+      font-family: var(--font); font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
+    }
+    .btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-danger {
+      padding: 8px 14px; border: none; border-radius: var(--radius-sm);
+      background: var(--danger); color: var(--white);
+      font-family: var(--font); font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-success {
+      padding: 8px 14px; border: none; border-radius: var(--radius-sm);
+      background: var(--success); color: var(--white);
+      font-family: var(--font); font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-outline {
+      padding: 8px 14px; border: 1.5px solid var(--blue-main); border-radius: var(--radius-sm);
+      background: transparent; color: var(--blue-main);
+      font-family: var(--font); font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-outline:hover { background: var(--blue-pale); }
+
+    /* =============================================
+       DASHBOARD SCREEN
+    ============================================= */
+    #screen-dashboard {
+      background: var(--gray-100);
+      z-index: 2;
+    }
+
+    /* --- HEADER / HERO --- */
+    .dash-header {
+      position: relative;
+      background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-main) 60%, var(--blue-light) 100%);
+      height: var(--header-h);
+      flex-shrink: 0;
+      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+      overflow: visible;
+      padding: 18px 20px 0;
+      z-index: 5;
+    }
+    /* Decorative blobs */
+    .dash-header::before {
+      content: '';
+      position: absolute; top: -30px; right: -30px;
+      width: 160px; height: 160px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .dash-header::after {
+      content: '';
+      position: absolute; bottom: 20px; left: -40px;
+      width: 120px; height: 120px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .header-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .header-greeting { flex: 1; }
+    .header-greeting .sub { font-size: 11px; color: rgba(255,255,255,0.72); font-weight: 400; }
+    .header-greeting .name { font-size: 16px; font-weight: 700; color: var(--white); margin-top: 1px; }
+    .header-greeting .role-badge {
+      display: inline-block; margin-top: 4px;
+      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
+      color: var(--white); font-size: 10px; font-weight: 600;
+      padding: 2px 9px; border-radius: 20px; letter-spacing: 0.5px;
+    }
+
+    .header-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.4);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--white); font-size: 18px; cursor: pointer;
+      flex-shrink: 0; position: relative; z-index: 2;
+    }
+
+    /* Search bar */
+    .header-search {
+      position: relative; margin-bottom: 0;
+    }
+    .header-search input {
+      width: 100%; padding: 10px 16px 10px 40px;
+      border-radius: var(--radius-md); border: none;
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(6px);
+      color: var(--white); font-family: var(--font); font-size: 13px;
+      outline: none;
+    }
+    .header-search input::placeholder { color: rgba(255,255,255,0.65); }
+    .header-search i {
+      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+      color: rgba(255,255,255,0.75); font-size: 14px;
+    }
+
+    /* --- FLOATING OSIS MENU --- */
+    .osis-menu-wrap {
+      position: relative; z-index: 10;
+      margin: 0 16px;
+      margin-top: -34px;
+    }
+    .osis-menu-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 14px 10px;
+    }
+    .osis-menu-title {
+      font-size: 10px; font-weight: 700; color: var(--gray-400);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 10px; text-align: center;
+    }
+    .osis-menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .osis-menu-item {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      cursor: pointer; padding: 8px 4px; border-radius: var(--radius-sm);
+      transition: all 0.2s;
+    }
+    .osis-menu-item:hover { background: var(--blue-pale); }
+    .osis-menu-item:active { transform: scale(0.94); }
+    .osis-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .osis-menu-item span { font-size: 9.5px; font-weight: 600; color: var(--gray-600); text-align: center; line-height: 1.3; }
+
+    /* Icon colors */
+    .ic-blue   { background: var(--blue-pale);   color: var(--blue-main); }
+    .ic-green  { background: #d1fae5; color: var(--success); }
+    .ic-orange { background: var(--accent-light); color: var(--accent); }
+    .ic-red    { background: #fee2e2; color: var(--danger); }
+    .ic-purple { background: #ede9fe; color: #7c3aed; }
+    .ic-teal   { background: #ccfbf1; color: #0d9488; }
+    .ic-pink   { background: #fce7f3; color: #db2777; }
+    .ic-indigo { background: #e0e7ff; color: #4338ca; }
+
+    /* --- FEED AREA --- */
+    .feed-area {
+      flex: 1; overflow-y: auto; padding: 0 0 calc(var(--nav-h) + 8px);
+      scroll-behavior: smooth;
+    }
+    .feed-area::-webkit-scrollbar { width: 0; }
+
+    /* Sticky header+menu container */
+    .dash-sticky-top {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--white);
+    }
+
+    /* The dash-header itself now lives INSIDE feed-area's sticky wrapper */
+    #screen-dashboard {
+      overflow: hidden;
+    }
+
+    /* Make the entire dashboard content area scrollable */
+    .dash-scroll-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: calc(var(--nav-h) + 8px);
+    }
+    .dash-scroll-wrapper::-webkit-scrollbar { width: 0; }
+
+    .feed-tabs {
+      display: flex; gap: 0; background: var(--white);
+      border-bottom: 1.5px solid var(--gray-100);
+      padding: 0 16px; position: sticky; top: 0; z-index: 4;
+    }
+    .feed-tab {
+      flex: 1; padding: 13px 8px; text-align: center;
+      font-size: 12px; font-weight: 600; color: var(--gray-400);
+      cursor: pointer; border-bottom: 2.5px solid transparent;
+      transition: all 0.2s; border: none; background: none;
+      font-family: var(--font);
+    }
+    .feed-tab.active { color: var(--blue-main); border-bottom-color: var(--blue-main); }
+
+    .feed-list { padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* Article card */
+    .article-card {
+      background: var(--white); border-radius: var(--radius-md);
+      overflow: hidden; box-shadow: var(--shadow-sm);
+      cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid var(--gray-100);
+    }
+    .article-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .article-card img { width: 100%; height: 160px; object-fit: cover; }
+    .article-body { padding: 14px; }
+    .article-category {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px; margin-bottom: 8px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .cat-beranda { background: var(--blue-pale); color: var(--blue-main); }
+    .cat-prestasi { background: var(--accent-light); color: #b45309; }
+    .cat-event { background: #d1fae5; color: #065f46; }
+    .article-title { font-size: 14px; font-weight: 700; color: var(--gray-800); margin-bottom: 6px; line-height: 1.4; }
+    .article-desc { font-size: 12px; color: var(--gray-600); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .article-meta { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .article-meta span { font-size: 11px; color: var(--gray-400); display: flex; align-items: center; gap: 4px; }
+
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--gray-400); }
+    .empty-state i { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state p { font-size: 13px; }
+
+    /* --- BOTTOM NAV --- */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 450px;
+      height: var(--nav-h);
+      background: var(--white);
+      border-top: 1px solid var(--gray-100);
+      display: flex; align-items: center; justify-content: space-around;
+      padding: 0 8px 8px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.07);
+      z-index: 20;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      flex: 1; cursor: pointer; padding: 8px;
+      border-radius: var(--radius-sm); transition: all 0.2s;
+      border: none; background: none; font-family: var(--font);
+    }
+    .nav-item i { font-size: 20px; color: var(--gray-400); transition: color 0.2s; }
+    .nav-item span { font-size: 10px; font-weight: 600; color: var(--gray-400); transition: color 0.2s; }
+    .nav-item.active i { color: var(--blue-main); }
+    .nav-item.active span { color: var(--blue-main); }
+    .nav-item.active { background: var(--blue-glass); }
+
+    /* =============================================
+       CHAT SCREEN (Warga Sekolah send complaint)
+    ============================================= */
+    #screen-chat {
+      background: var(--gray-100);
+    }
+    .chat-header-bar {
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-main));
+      padding: 18px 16px;
+      display: flex; align-items: center; gap: 12px;
+      flex-shrink: 0;
+    }
+    .chat-header-bar .back-btn { color: var(--white); font-size: 18px; cursor: pointer; padding: 4px; }
+    .chat-header-bar .chat-info { flex: 1; }
+    .chat-header-bar h3 { font-size: 15px; font-weight: 700; color: var(--white); }
+    .chat-header-bar p { font-size: 11px; color: rgba(255,255,255,0.7); }
+    .chat-header-bar .online-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; margin-right: 4px; }
+
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 16px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .chat-messages::-webkit-scrollbar { width: 0; }
+
+    .msg-bubble {
+      max-width: 78%; padding: 10px 14px; border-radius: 16px;
+      font-size: 13px; line-height: 1.5;
+    }
+    .msg-bubble.sent {
+      align-self: flex-end;
+      background: var(--blue-main); color: var(--white);
+      border-bottom-right-radius: 4px;
+    }
+    .msg-bubble.received {
+      align-self: flex-start;
+      background: var(--white); color: var(--gray-800);
+      border-bottom-left-radius: 4px;
+      box-shadow: var(--shadow-sm);
+    }
+    .msg-meta { font-size: 10px; margin-top: 4px; opacity: 0.65; }
+    .msg-bubble.sent .msg-meta { text-align: right; }
+
+    .chat-input-bar {
+      padding: 12px 16px;
+      background: var(--white);
+      border-top: 1px solid var(--gray-100);
+      display: flex; gap: 10px; align-items: center;
+      flex-shrink: 0;
+    }
+    .chat-input-bar textarea {
+      flex: 1; padding: 10px 14px; border-radius: 20px;
+      border: 1.5px solid var(--gray-200); font-family: var(--font); font-size: 13px;
+      resize: none; outline: none; max-height: 90px;
+    }
+    .chat-input-bar textarea:focus { border-color: var(--blue-main); }
+    .chat-send-btn {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--blue-main); border: none;
+      color: var(--white); font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.2s;
+    }
+    .chat-send-btn:hover { background: var(--blue-dark); transform: scale(1.05); }
+
+    /* =============================================
+       PRESTASI / EVENT SCREEN
+    ============================================= */
+    #screen-prestasi, #screen-event {
+      background: var(--gray-100);
+    }
+    .sub-header {
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-main));
+      padding: 20px 16px 40px;
+      flex-shrink: 0;
+      position: relative;
+      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    }
+    .sub-header h2 { font-size: 18px; font-weight: 800; color: var(--white); }
+    .sub-header p { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 4px; }
+    .sub-content { flex: 1; overflow-y: auto; padding: 16px; margin-top: -20px; }
+
+    /* =============================================
+       MODAL SYSTEM (OSIS workspace)
+    ============================================= */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(3px);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+
+    .modal-sheet {
+      background: var(--white);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      width: 100%; max-width: 450px;
+      max-height: 90dvh;
+      display: flex; flex-direction: column;
+      animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      overflow: hidden;
+    }
+
+    .modal-handle {
+      width: 40px; height: 4px; background: var(--gray-200);
+      border-radius: 4px; margin: 12px auto 0;
+      flex-shrink: 0;
+    }
+    .modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--gray-100);
+      flex-shrink: 0;
+    }
+    .modal-head h3 { font-size: 16px; font-weight: 700; color: var(--gray-800); }
+    .modal-close { background: var(--gray-100); border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 14px; color: var(--gray-600); display: flex; align-items: center; justify-content: center; }
+    .modal-body { flex: 1; overflow-y: auto; padding: 16px 20px 24px; }
+    .modal-body::-webkit-scrollbar { width: 0; }
+
+    /* =============================================
+       TABLE STYLE
+    ============================================= */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .data-table th { background: var(--blue-pale); color: var(--blue-dark); font-weight: 700; padding: 9px 10px; text-align: left; }
+    .data-table td { padding: 9px 10px; border-bottom: 1px solid var(--gray-100); color: var(--gray-800); vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--gray-50); }
+
+    /* =============================================
+       FORM ELEMENTS in MODAL
+    ============================================= */
+    .modal-form { display: flex; flex-direction: column; gap: 14px; }
+    .modal-form label { font-size: 12px; font-weight: 600; color: var(--gray-600); display: block; margin-bottom: 5px; }
+    .modal-form input,
+    .modal-form select,
+    .modal-form textarea {
+      width: 100%; padding: 10px 13px;
+      border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
+      font-family: var(--font); font-size: 13px; color: var(--gray-800);
+      background: var(--gray-50); outline: none;
+      transition: border-color 0.2s;
+    }
+    .modal-form input:focus,
+    .modal-form select:focus,
+    .modal-form textarea:focus { border-color: var(--blue-main); background: var(--white); }
+    .modal-form textarea { resize: vertical; min-height: 80px; }
+
+    /* File upload area */
+    .upload-area {
+      border: 2px dashed var(--gray-200); border-radius: var(--radius-md);
+      padding: 20px; text-align: center; cursor: pointer;
+      transition: all 0.2s; background: var(--gray-50);
+    }
+    .upload-area:hover { border-color: var(--blue-main); background: var(--blue-pale); }
+    .upload-area i { font-size: 28px; color: var(--gray-400); margin-bottom: 8px; }
+    .upload-area p { font-size: 12px; color: var(--gray-400); }
+    .upload-area .upload-preview { max-width: 100%; max-height: 160px; border-radius: var(--radius-sm); margin-top: 10px; object-fit: cover; }
+
+    /* Stat card */
+    .stat-card {
+      background: var(--white); border-radius: var(--radius-md);
+      padding: 14px; box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray-100);
+    }
+    .stat-card .stat-val { font-size: 22px; font-weight: 800; color: var(--blue-main); }
+    .stat-card .stat-lbl { font-size: 11px; color: var(--gray-400); margin-top: 2px; font-weight: 500; }
+
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+
+    /* Finance badge */
+    .fin-in  { color: var(--success); font-weight: 700; }
+    .fin-out { color: var(--danger);  font-weight: 700; }
+
+    /* Leaderboard */
+    .lb-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px; border-radius: var(--radius-sm);
+      background: var(--gray-50); margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .lb-rank {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; flex-shrink: 0;
+    }
+    .lb-rank.r1 { background: #ffd700; color: #7a5800; }
+    .lb-rank.r2 { background: #c0c0c0; color: #555; }
+    .lb-rank.r3 { background: #cd7f32; color: #fff; }
+    .lb-rank.rn { background: var(--gray-200); color: var(--gray-600); }
+    .lb-name { flex: 1; font-size: 13px; font-weight: 600; color: var(--gray-800); }
+    .lb-pts { font-size: 13px; font-weight: 700; color: var(--blue-main); }
+
+    /* Deadline item */
+    .deadline-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px; border-radius: var(--radius-sm);
+      background: var(--gray-50); margin-bottom: 8px;
+    }
+    .deadline-check {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid var(--gray-300); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.2s;
+    }
+    .deadline-check.done { background: var(--success); border-color: var(--success); color: var(--white); }
+    .deadline-info { flex: 1; }
+    .deadline-info .task { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+    .deadline-info .due  { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+    .deadline-overdue { color: var(--danger) !important; }
+
+    /* Tag badge */
+    .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+    .tag-blue   { background: var(--blue-pale); color: var(--blue-main); }
+    .tag-green  { background: #d1fae5; color: #065f46; }
+    .tag-orange { background: var(--accent-light); color: #b45309; }
+
+    /* Section title */
+    .sec-title {
+      font-size: 13px; font-weight: 700; color: var(--gray-800);
+      margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .sec-title .add-btn {
+      background: var(--blue-main); color: var(--white);
+      border: none; border-radius: 8px; padding: 5px 12px;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      font-family: var(--font); display: flex; align-items: center; gap: 4px;
+    }
+
+    /* =============================================
+       TOAST NOTIFICATION
+    ============================================= */
+    #toast-container {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+      pointer-events: none; width: calc(100% - 32px); max-width: 418px;
+    }
+    .toast {
+      background: var(--gray-800); color: var(--white);
+      padding: 12px 16px; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 500;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: var(--shadow-lg);
+      animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.5s forwards;
+    }
+    .toast.success { background: var(--success); }
+    .toast.error   { background: var(--danger); }
+    .toast.info    { background: var(--blue-main); }
+
+    /* =============================================
+       KEYFRAME ANIMATIONS
+    ============================================= */
+    @keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp   { from { opacity: 0; transform: translateY(30px);  } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp   { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeOut   { from { opacity: 1; } to { opacity: 0; } }
+
+    /* =============================================
+       SCROLLBAR HIDE for modal-body
+    ============================================= */
+    * { scrollbar-width: none; }
+    *::-webkit-scrollbar { display: none; }
+
+    /* =============================================
+       LOGOUT BUTTON
+    ============================================= */
+    .logout-btn {
+      position: absolute; top: 18px; right: 16px;
+      background: rgba(255,255,255,0.15); border: none;
+      color: var(--white); border-radius: 20px; padding: 5px 12px;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      font-family: var(--font); display: flex; align-items: center; gap: 5px;
+    }
+    /* Image placeholder when no image */
+    .article-img-placeholder {
+      width: 100%; height: 160px;
+      background: linear-gradient(135deg, var(--blue-pale), var(--blue-glass));
+      display: flex; align-items: center; justify-content: center;
+      color: var(--blue-light); font-size: 36px;
+    }
+
+    /* Chat admin panel */
+    .complaint-card {
+      background: var(--white); border-radius: var(--radius-md);
+      padding: 14px; box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray-100); margin-bottom: 10px;
+    }
+    .complaint-from { font-size: 12px; font-weight: 700; color: var(--blue-main); margin-bottom: 4px; }
+    .complaint-msg  { font-size: 13px; color: var(--gray-800); margin-bottom: 8px; line-height: 1.5; }
+    .complaint-time { font-size: 10px; color: var(--gray-400); }
+    .complaint-replies { border-top: 1px solid var(--gray-100); margin-top: 10px; padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .reply-bubble { background: var(--blue-pale); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: var(--blue-dark); }
+    .reply-admin-label { font-size: 10px; font-weight: 700; color: var(--blue-main); margin-bottom: 2px; }
+
+    /* PDD badge */
+    .pdd-only { display: none; }
+
+    /* Divisi tag */
+    .divisi-select option { font-family: var(--font); }
+
+    /* Section divider */
+    .divider { height: 1px; background: var(--gray-100); margin: 12px 0; }
+
+    /* Article action bar (like/comment/share/edit/delete) */
+    .article-actions {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--gray-100);
+      background: var(--white);
+    }
+    .action-btn {
+      display: flex; align-items: center; gap: 5px;
+      padding: 6px 12px; border-radius: 20px;
+      border: 1.5px solid var(--gray-200); background: transparent;
+      font-family: var(--font); font-size: 12px; font-weight: 600;
+      color: var(--gray-600); cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .action-btn:hover { background: var(--blue-pale); border-color: var(--blue-light); color: var(--blue-main); }
+    .action-btn.liked { background: #fee2e2; border-color: var(--danger); color: var(--danger); }
+    .action-btn.liked i { color: var(--danger); }
+    .action-btn.edit-btn { margin-left: auto; border-color: var(--blue-light); color: var(--blue-main); padding: 6px 10px; }
+    .action-btn.delete-btn { border-color: var(--danger); color: var(--danger); padding: 6px 10px; }
+    .action-btn.edit-btn:hover { background: var(--blue-pale); }
+    .action-btn.delete-btn:hover { background: #fee2e2; }
+
+    /* Comment items */
+    .comment-item {
+      background: var(--gray-50); border-radius: var(--radius-sm);
+      padding: 10px 12px; margin-bottom: 8px;
+    }
+    .comment-author { font-size: 12px; font-weight: 700; color: var(--blue-main); margin-bottom: 3px; display: flex; align-items: center; gap: 5px; }
+    .comment-text { font-size: 13px; color: var(--gray-800); line-height: 1.5; }
+    .comment-time { font-size: 10px; color: var(--gray-400); margin-top: 4px; }
+
+    /* Make dash-scroll-wrapper fill and scroll */
+    .dash-scroll-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: calc(var(--nav-h) + 8px);
+    }
+    .dash-scroll-wrapper::-webkit-scrollbar { width: 0; }
+  </style>
+</head>
+<body>
+
+<!-- =============================================
+     TOAST CONTAINER
+============================================= -->
+<div id="toast-container"></div>
+
+<!-- =============================================
+     APP ROOT
+============================================= -->
+<div id="app">
+
+  <!-- ==================== AUTH SCREEN ==================== -->
+  <div id="screen-auth" class="screen active">
+    <div class="auth-logo">
+      <div class="logo-circle">
+        <i class="fas fa-graduation-cap"></i>
+      </div>
+      <h1>SANTANA</h1>
+      <p>Student Information System — SMKS Santana 1 Cibatu</p>
+    </div>
+
+    <div class="auth-card">
+      <!-- Tabs: Login / Register -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Masuk</button>
+        <button class="auth-tab" onclick="switchAuthTab('register')">Daftar</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="form-login" class="auth-form active">
+        <div class="form-group">
+          <label>Nama Pengguna</label>
+          <div class="input-wrap">
+            <i class="fas fa-user"></i>
+            <input type="text" id="login-username" placeholder="Masukkan username..." />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Kata Sandi</label>
+          <div class="input-wrap">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="login-password" placeholder="Masukkan password..." />
+          </div>
+        </div>
+        <button class="btn-primary" onclick="doLogin()">
+          <i class="fas fa-sign-in-alt" style="margin-right:6px"></i>Masuk
+        </button>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="form-register" class="auth-form">
+        <div class="form-group">
+          <label>Nama Lengkap</label>
+          <div class="input-wrap">
+            <i class="fas fa-id-card"></i>
+            <input type="text" id="reg-name" placeholder="Nama lengkap..." />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Username</label>
+          <div class="input-wrap">
+            <i class="fas fa-user"></i>
+            <input type="text" id="reg-username" placeholder="Buat username..." />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="reg-password" placeholder="Minimal 6 karakter..." />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <div class="input-wrap">
+            <i class="fas fa-user-tag"></i>
+            <select id="reg-role" onchange="handleRoleChange()">
+              <option value="warga">Warga Sekolah</option>
+              <option value="osis">Anggota OSIS (Umum)</option>
+              <option value="ketua">Ketua / Wakil Ketua OSIS</option>
+              <option value="bendahara">Bendahara OSIS</option>
+              <option value="sekretaris">Sekretaris OSIS</option>
+              <option value="pdd">Bidang PDD</option>
+            </select>
+          </div>
+        </div>
+        <!-- Kode verifikasi untuk role OSIS -->
+        <div class="form-group" id="role-code-wrap" style="display:none">
+          <label>Kode Verifikasi Role</label>
+          <div class="input-wrap">
+            <i class="fas fa-key"></i>
+            <input type="password" id="reg-code" placeholder="Masukkan kode khusus..." />
+          </div>
+          <div class="role-info" id="role-hint">
+            Masukkan kode verifikasi yang telah diberikan oleh administrator OSIS.
+          </div>
+        </div>
+        <div class="form-group" id="divisi-wrap" style="display:none">
+          <label>Divisi / Bidang</label>
+          <div class="input-wrap">
+            <i class="fas fa-layer-group"></i>
+            <select id="reg-divisi" class="divisi-select">
+              <option value="Ketua Umum">Ketua Umum</option>
+              <option value="Wakil Ketua">Wakil Ketua</option>
+              <option value="Sekretaris">Sekretaris</option>
+              <option value="Bendahara">Bendahara</option>
+              <option value="PDD">PDD</option>
+              <option value="Humas">Humas</option>
+              <option value="Kesenian">Kesenian</option>
+              <option value="Olahraga">Olahraga</option>
+              <option value="Ketertiban">Ketertiban</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="doRegister()">
+          <i class="fas fa-user-plus" style="margin-right:6px"></i>Daftar Sekarang
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- END AUTH -->
+
+
+  <!-- ==================== DASHBOARD SCREEN ==================== -->
+  <div id="screen-dashboard" class="screen">
+
+    <!-- SCROLLABLE WRAPPER -->
+    <div class="dash-scroll-wrapper" id="feed-area">
+
+      <!-- HEADER HERO -->
+      <div class="dash-header" id="dash-header">
+        <button class="logout-btn" onclick="doLogout()">
+          <i class="fas fa-sign-out-alt"></i> Keluar
+        </button>
+        <div class="header-top">
+          <div class="header-greeting">
+            <div class="sub">Selamat Datang di 👋</div>
+            <div class="name" id="greet-name">SANTANA System</div>
+            <div class="role-badge" id="greet-role">Warga Sekolah</div>
+          </div>
+          <div class="header-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+        </div>
+        <div class="header-search">
+          <i class="fas fa-search"></i>
+          <input type="text" id="search-input" placeholder="Cari artikel, berita, kegiatan..." oninput="doSearch()" />
+        </div>
+      </div>
+
+      <!-- FLOATING OSIS MENU -->
+      <div class="osis-menu-wrap" id="osis-menu-wrap" style="display:none">
+        <div class="osis-menu-card">
+          <div class="osis-menu-title"><i class="fas fa-th" style="margin-right:5px"></i>Menu OSIS</div>
+          <div class="osis-menu-grid" id="osis-menu-grid"></div>
+        </div>
+      </div>
+
+      <!-- FEED TABS sticky -->
+      <div class="feed-tabs">
+        <button class="feed-tab active" onclick="switchFeedTab('beranda',this)">🏠 Beranda</button>
+        <button class="feed-tab" onclick="switchFeedTab('prestasi',this)">🏆 Prestasi</button>
+        <button class="feed-tab" onclick="switchFeedTab('event',this)">🎉 Event</button>
+      </div>
+
+      <!-- Feed list -->
+      <div class="feed-list" id="feed-list"></div>
+
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+      <button class="nav-item active" id="nav-beranda" onclick="activateNav('beranda')">
+        <i class="fas fa-home"></i><span>Beranda</span>
+      </button>
+      <button class="nav-item" id="nav-prestasi" onclick="activateNav('prestasi')">
+        <i class="fas fa-trophy"></i><span>Prestasi</span>
+      </button>
+      <button class="nav-item" id="nav-event" onclick="activateNav('event')">
+        <i class="fas fa-calendar-alt"></i><span>Event</span>
+      </button>
+      <button class="nav-item" id="nav-chat" onclick="activateNav('chat')">
+        <i class="fas fa-comment-dots"></i><span>Chat</span>
+      </button>
+    </div>
+  </div>
+  <!-- END DASHBOARD -->
+
+
+  <!-- ==================== CHAT SCREEN ==================== -->
+  <div id="screen-chat" class="screen">
+    <div class="chat-header-bar">
+      <span class="back-btn" onclick="goBack('dashboard')"><i class="fas fa-arrow-left"></i></span>
+      <div class="chat-info">
+        <h3><i class="fas fa-headset" style="margin-right:6px"></i>Pusat Bantuan OSIS</h3>
+        <p><span class="online-dot"></span>Sekretaris siap membantu Anda</p>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <!-- Diisi JS -->
+    </div>
+    <div class="chat-input-bar">
+      <textarea id="chat-msg-input" placeholder="Ketik keluhan atau pertanyaan Anda..." rows="1"></textarea>
+      <button class="chat-send-btn" onclick="sendChatMessage()">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+  <!-- END CHAT -->
+
+
+  <!-- ==================== MODALS (OSIS Workspace) ==================== -->
+
+  <!-- Modal: Laporan Keuangan -->
+  <div class="modal-overlay" id="modal-keuangan">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3><i class="fas fa-wallet" style="color:var(--success);margin-right:8px"></i>Laporan Keuangan</h3>
+        <button class="modal-close" onclick="closeModal('modal-keuangan')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <!-- Stats keuangan -->
+        <div class="stats-row" id="fin-stats"></div>
+        <!-- Form tambah (khusus bendahara) -->
+        <div id="fin-form-wrap" style="display:none;margin-bottom:14px">
+          <div class="sec-title">Tambah Riwayat Kas</div>
+          <div class="modal-form">
+            <div>
+              <label>Jenis</label>
+              <select id="fin-jenis"><option value="pemasukan">Pemasukan</option><option value="pengeluaran">Pengeluaran</option></select>
+            </div>
+            <div>
+              <label>Keterangan</label>
+              <input type="text" id="fin-ket" placeholder="Keterangan transaksi..." />
+            </div>
+            <div>
+              <label>Jumlah (Rp)</label>
+              <input type="number" id="fin-nominal" placeholder="0" />
+            </div>
+            <button class="btn-success" onclick="addKeuangan()">Simpan Transaksi</button>
+          </div>
+          <div class="divider"></div>
+        </div>
+        <!-- Grafik Keuangan -->
+        <div style="margin-bottom:14px">
+          <button onclick="toggleGrafik()" id="btn-toggle-grafik" style="width:100%;padding:10px 14px;background:var(--blue-pale);border:1.5px solid var(--blue-light);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;font-weight:600;color:var(--blue-main);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s">
+            <i class="fas fa-chart-bar"></i> Lihat Grafik Keuangan
+          </button>
+          <div id="grafik-section" style="display:none;margin-top:12px;background:var(--gray-50);border-radius:var(--radius-md);padding:14px">
+            <div style="display:flex;gap:6px;margin-bottom:12px">
+              <button onclick="showGrafik('mingguan',this)" class="grafik-tab-btn" id="gtab-mingguan" style="flex:1;padding:8px 4px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;background:var(--white);color:var(--gray-600);transition:all 0.2s">📅 Mingguan</button>
+              <button onclick="showGrafik('bulanan',this)" class="grafik-tab-btn" id="gtab-bulanan" style="flex:1;padding:8px 4px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;background:var(--white);color:var(--gray-600);transition:all 0.2s">📆 Bulanan</button>
+              <button onclick="showGrafik('tahunan',this)" class="grafik-tab-btn" id="gtab-tahunan" style="flex:1;padding:8px 4px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;background:var(--white);color:var(--gray-600);transition:all 0.2s">📊 Tahunan</button>
+            </div>
+            <canvas id="grafik-canvas" style="width:100%;display:block;border-radius:var(--radius-sm)"></canvas>
+            <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;font-weight:600;justify-content:center;color:var(--gray-600)">
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#10b981;border-radius:3px;display:inline-block;flex-shrink:0"></span>Pemasukan</span>
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#ef4444;border-radius:3px;display:inline-block;flex-shrink:0"></span>Pengeluaran</span>
+            </div>
+          </div>
+        </div>
+        <!-- Tabel riwayat -->
+        <div class="sec-title">Riwayat Kas</div>
+        <div id="fin-table-wrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Daftar Tugas Divisi -->
+  <div class="modal-overlay" id="modal-tugas">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3><i class="fas fa-tasks" style="color:var(--blue-main);margin-right:8px"></i>Daftar Tugas Divisi</h3>
+        <button class="modal-close" onclick="closeModal('modal-tugas')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <!-- Form tambah (ketua/wakil) -->
+        <div id="tugas-form-wrap" style="display:none;margin-bottom:14px">
+          <div class="sec-title">Tambah Tugas Baru</div>
+          <div class="modal-form">
+            <div>
+              <label>Judul Tugas</label>
+              <input type="text" id="tugas-judul" placeholder="Judul tugas..." />
+            </div>
+            <div>
+              <label>Divisi</label>
+              <select id="tugas-divisi">
+                <option>PDD</option><option>Humas</option><option>Kesenian</option>
+                <option>Olahraga</option><option>Ketertiban</option><option>Semua</option>
+              </select>
+            </div>
+            <div>
+              <label>Deskripsi</label>
+              <textarea id="tugas-desc" placeholder="Deskripsi tugas..."></textarea>
+            </div>
+            <button class="btn-primary" onclick="addTugas()"><i class="fas fa-plus"></i> Tambah Tugas</button>
+          </div>
+          <div class="divider"></div>
+        </div>
+        <div id="tugas-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Deadline -->
+  <div class="modal-overlay" id="modal-deadline">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3><i class="fas fa-clock" style="color:var(--accent);margin-right:8px"></i>Deadline Tugas</h3>
+        <button class="modal-close" onclick="closeModal('modal-deadline')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <!-- Form tambah (ketua/wakil) -->
+        <div id="deadline-form-wrap" style="display:none;margin-bottom:14px">
+          <div class="sec-title">Tambah Deadline</div>
+          <div class="modal-form">
+            <div>
+              <label>Nama Tugas</label>
+              <input type="text" id="dl-nama" placeholder="Nama tugas..." />
+            </div>
+            <div>
+              <label>Deadline</label>
+              <input type="datetime-local" id="dl-tanggal" />
+            </div>
+            <button class="btn-primary" onclick="addDeadline()"><i class="fas fa-plus"></i> Tambah</button>
+          </div>
+          <div class="divider"></div>
+        </div>
+        <div id="deadline-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Kirim Laporan Tugas -->
+  <div class="modal-overlay" id="modal-laporan">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3><i class="fas fa-file-alt" style="color:var(--blue-main);margin-right:8px"></i>Laporan Tugas</h3>
+        <button class="modal-close" onclick="closeModal('modal-laporan')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <!-- Form kirim laporan -->
+        <div class="sec-title">Kirim Laporan Saya</div>
+        <div class="modal-form" style="margin-bottom:16px">
+          <div>
+            <label>Judul Laporan</label>
+            <input type="text" id="lap-judul" placeholder="Judul laporan..." />
+          </div>
+          <div>
+            <label>Isi Laporan</label>
+            <textarea id="lap-isi" placeholder="Ceritakan apa yang sudah dikerjakan..." rows="4"></textarea>
+          </div>
+          <button class="btn-primary" onclick="kirimLaporan()"><i class="fas fa-paper-plane"></i> Kirim Laporan (+1 Poin)</button>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-title">Laporan Semua Anggota</div>
+        <div id="laporan-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Leaderboard / Poin Ranking -->
+  <div class="modal-overlay" id="modal-leaderboard">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3><i class="fas fa-crown" style="color:var(--accent);margin-right:8px"></i>Poin Ranking</h3>
+        <button class="modal-close" onclick="closeModal('modal-leaderboard')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div id="leaderboard-list"></div>
+        <!-- Moderasi poin (ketua/wakil) -->
+        <div id="poin-mod-wrap" style="display:none">
+          <div class="divider"></div>
+          <div class="sec-title">Moderasi Poin Anggota</div>
+          <div class="modal-form">
+            <div>
+              <label>Pilih Anggota</label>
+              <select id="mod-user"></select>
+            </div>
+            <div>
+              <label>Jumlah Poin (+ untuk tambah, - untuk kurangi)</label>
+              <input type="number" id="mod-poin" placeholder="Contoh: 5 atau -3" />
+            </div>
+            <button class="btn-primary" onclick="modPoin()"><i class="fas fa-edit"></i> Update Poin</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Upload Publikasi (PDD) -->
+  <div class="modal-overlay" id="modal-upload">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3><i class="fas fa-upload" style="color:var(--blue-main);margin-right:8px"></i>Upload Publikasi</h3>
+        <button class="modal-close" onclick="closeModal('modal-upload')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-form">
+          <div>
+            <label>Kategori</label>
+            <select id="pub-kategori">
+              <option value="beranda">Beranda</option>
+              <option value="prestasi">Prestasi</option>
+              <option value="event">Event</option>
+            </select>
+          </div>
+          <div>
+            <label>Judul Artikel</label>
+            <input type="text" id="pub-judul" placeholder="Judul artikel atau berita..." />
+          </div>
+          <div>
+            <label>Deskripsi</label>
+            <textarea id="pub-desc" placeholder="Isi deskripsi artikel..." rows="4"></textarea>
+          </div>
+          <div>
+            <label>Gambar (dari galeri/kamera)</label>
+            <div class="upload-area" onclick="document.getElementById('pub-img-input').click()">
+              <i class="fas fa-image" id="upload-icon"></i>
+              <p id="upload-hint">Klik untuk memilih gambar dari galeri</p>
+              <img id="pub-preview" class="upload-preview" style="display:none" />
+            </div>
+            <input type="file" id="pub-img-input" accept="image/*" style="display:none" onchange="handleImageUpload(event)" />
+          </div>
+          <button class="btn-primary" onclick="uploadPublikasi()">
+            <i class="fas fa-paper-plane"></i> Publikasikan Artikel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Chat Keluhan (Sekretaris admin panel) -->
+  <div class="modal-overlay" id="modal-keluhan">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3><i class="fas fa-inbox" style="color:var(--blue-main);margin-right:8px"></i>Keluhan Warga</h3>
+        <button class="modal-close" onclick="closeModal('modal-keluhan')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div id="keluhan-list"></div>
+        <!-- Form balas -->
+        <div class="divider"></div>
+        <div class="sec-title">Balas Keluhan</div>
+        <div class="modal-form">
+          <div>
+            <label>Pilih Keluhan</label>
+            <select id="balas-select"></select>
+          </div>
+          <div>
+            <label>Balasan</label>
+            <textarea id="balas-isi" placeholder="Ketik balasan dari OSIS..."></textarea>
+          </div>
+          <button class="btn-primary" onclick="balasKeluhan()"><i class="fas fa-reply"></i> Kirim Balasan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Detail Artikel -->
+  <div class="modal-overlay" id="modal-artikel">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3 id="artikel-modal-title">Detail Artikel</h3>
+        <button class="modal-close" onclick="closeModal('modal-artikel')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <img id="artikel-modal-img" style="width:100%;border-radius:var(--radius-md);margin-bottom:14px;display:none" />
+        <div id="artikel-modal-cat" style="margin-bottom:10px"></div>
+        <div id="artikel-modal-desc" style="font-size:14px;line-height:1.7;color:var(--gray-800)"></div>
+        <div id="artikel-modal-meta" style="margin-top:14px;font-size:11px;color:var(--gray-400)"></div>
+        <!-- Like & Share actions -->
+        <div id="artikel-modal-actions" style="display:flex;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--gray-100)"></div>
+        <!-- Comments section -->
+        <div style="margin-top:16px">
+          <div style="font-size:13px;font-weight:700;color:var(--gray-800);margin-bottom:10px"><i class="fas fa-comments" style="margin-right:6px;color:var(--blue-main)"></i>Komentar</div>
+          <div id="artikel-modal-comments"></div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <input type="hidden" id="artikel-comment-id" />
+            <input type="text" id="artikel-comment-input" placeholder="Tulis komentar..." style="flex:1;padding:9px 13px;border:1.5px solid var(--gray-200);border-radius:20px;font-family:var(--font);font-size:13px;outline:none" onfocus="this.style.borderColor='var(--blue-main)'" onblur="this.style.borderColor='var(--gray-200)'" />
+            <button onclick="kirimKomentar()" style="background:var(--blue-main);border:none;border-radius:50%;width:38px;height:38px;color:white;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Artikel (PDD) -->
+  <div class="modal-overlay" id="modal-edit-artikel">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3><i class="fas fa-edit" style="color:var(--blue-main);margin-right:8px"></i>Edit Artikel</h3>
+        <button class="modal-close" onclick="closeModal('modal-edit-artikel')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-artikel-id" />
+        <div class="modal-form">
+          <div>
+            <label>Kategori</label>
+            <select id="edit-pub-kategori">
+              <option value="beranda">Beranda</option>
+              <option value="prestasi">Prestasi</option>
+              <option value="event">Event</option>
+            </select>
+          </div>
+          <div>
+            <label>Judul Artikel</label>
+            <input type="text" id="edit-pub-judul" placeholder="Judul artikel..." />
+          </div>
+          <div>
+            <label>Deskripsi</label>
+            <textarea id="edit-pub-desc" rows="4" placeholder="Isi deskripsi..."></textarea>
+          </div>
+          <button class="btn-primary" onclick="simpanEditArtikel()"><i class="fas fa-save"></i> Simpan Perubahan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Laporan Tugas -->
+  <div class="modal-overlay" id="modal-edit-laporan">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3><i class="fas fa-edit" style="color:var(--blue-main);margin-right:8px"></i>Edit Laporan</h3>
+        <button class="modal-close" onclick="closeModal('modal-edit-laporan')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-laporan-id" />
+        <div class="modal-form">
+          <div>
+            <label>Judul Laporan</label>
+            <input type="text" id="edit-lap-judul" placeholder="Judul laporan..." />
+          </div>
+          <div>
+            <label>Isi Laporan</label>
+            <textarea id="edit-lap-isi" rows="5" placeholder="Isi laporan..."></textarea>
+          </div>
+          <button class="btn-primary" onclick="simpanEditLaporan()"><i class="fas fa-save"></i> Simpan Perubahan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- END #app -->
+
+
+<!-- =============================================
+     JAVASCRIPT — CORE APPLICATION LOGIC
+============================================= -->
+<script>
+/* ====================================================
+   STORAGE HELPER — try/catch dengan in-memory fallback
+   Mencegah error di mobile viewer yang memblokir localStorage
+==================================================== */
+const Storage = (() => {
+  let mem = {}; // fallback memory
+  let useLS = true;
+
+  // Test apakah localStorage bisa digunakan
+  try {
+    localStorage.setItem('_test', '1');
+    localStorage.removeItem('_test');
+  } catch (e) {
+    useLS = false;
+    console.warn('[SANTANA] localStorage tidak tersedia, menggunakan memory fallback.');
+  }
+
+  return {
+    get(key) {
+      try {
+        if (useLS) {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : null;
+        }
+      } catch(e) { useLS = false; }
+      return mem[key] !== undefined ? mem[key] : null;
+    },
+    set(key, val) {
+      try {
+        if (useLS) { localStorage.setItem(key, JSON.stringify(val)); return; }
+      } catch(e) { useLS = false; }
+      mem[key] = val;
+    },
+    remove(key) {
+      try { if (useLS) { localStorage.removeItem(key); return; } } catch(e) { useLS = false; }
+      delete mem[key];
+    }
+  };
+})();
+
+/* ====================================================
+   DATABASE SEED — data awal jika belum ada
+==================================================== */
+function seedDB() {
+  // Seed users
+  if (!Storage.get('users')) {
+    Storage.set('users', [
+      { id: 'u0', name: 'Admin Warga', username: 'warga1', password: '123456', role: 'warga', divisi: '-', poin: 0 },
+      { id: 'u1', name: 'Ketua OSIS', username: 'ketua1', password: '123456', role: 'ketua', divisi: 'Ketua Umum', poin: 10 },
+      { id: 'u2', name: 'Budi Bendahara', username: 'budi', password: '123456', role: 'bendahara', divisi: 'Bendahara', poin: 5 },
+      { id: 'u3', name: 'Sari Sekretaris', username: 'sari', password: '123456', role: 'sekretaris', divisi: 'Sekretaris', poin: 7 },
+      { id: 'u4', name: 'Dian PDD', username: 'dian', password: '123456', role: 'pdd', divisi: 'PDD', poin: 8 },
+      { id: 'u5', name: 'Anggota Biasa', username: 'anggota1', password: '123456', role: 'osis', divisi: 'Humas', poin: 3 },
+    ]);
+  }
+  // Seed artikel
+  if (!Storage.get('artikel')) {
+    Storage.set('artikel', [
+      { id: 'a1', kategori: 'beranda', judul: 'Selamat Datang di SANTANA System!', deskripsi: 'Platform informasi resmi SMKS Santana 1 Cibatu. Temukan berbagai informasi seputar kegiatan sekolah, prestasi siswa, dan agenda OSIS di sini. Kami berkomitmen untuk menjadi jembatan informasi antara warga sekolah dan pengurus OSIS.', gambar: null, penulis: 'Admin', waktu: Date.now() - 86400000 * 2 },
+      { id: 'a2', kategori: 'prestasi', judul: 'Juara 1 LKS Tingkat Provinsi Jabar!', deskripsi: 'Tim siswa SMKS Santana 1 Cibatu berhasil meraih juara pertama dalam ajang Lomba Kompetensi Siswa (LKS) tingkat Provinsi Jawa Barat. Sebuah pencapaian luar biasa yang membanggakan seluruh warga sekolah!', gambar: null, penulis: 'PDD OSIS', waktu: Date.now() - 86400000 },
+      { id: 'a3', kategori: 'event', judul: 'Agenda: Class Meeting Semester Genap', deskripsi: 'OSIS SMKS Santana 1 Cibatu dengan bangga mempersembahkan Class Meeting Semester Genap. Berbagai perlombaan seru sudah menanti, mulai dari futsal, bola voli, hingga lomba kebersihan kelas. Daftarkan tim kalian sekarang!', gambar: null, penulis: 'Ketua OSIS', waktu: Date.now() - 3600000 * 5 },
+    ]);
+  }
+  // Seed keuangan
+  if (!Storage.get('keuangan')) {
+    Storage.set('keuangan', [
+      { id: 'k1', jenis: 'pemasukan', ket: 'Iuran Anggota Bulan Mei', nominal: 500000, waktu: Date.now() - 86400000 * 3, user: 'Budi Bendahara' },
+      { id: 'k2', jenis: 'pengeluaran', ket: 'Beli Spidol & ATK', nominal: 75000, waktu: Date.now() - 86400000 * 2, user: 'Budi Bendahara' },
+      { id: 'k3', jenis: 'pemasukan', ket: 'Sumbangan Alumni', nominal: 1000000, waktu: Date.now() - 86400000, user: 'Budi Bendahara' },
+    ]);
+  }
+  // Seed tugas
+  if (!Storage.get('tugas')) {
+    Storage.set('tugas', [
+      { id: 't1', judul: 'Desain Poster Class Meeting', divisi: 'PDD', deskripsi: 'Buat 3 varian poster untuk event class meeting.', waktu: Date.now() - 86400000 },
+      { id: 't2', judul: 'Koordinasi dengan Pembina', divisi: 'Semua', deskripsi: 'Meeting rutin dengan Pak Pembina setiap Rabu.', waktu: Date.now() },
+    ]);
+  }
+  // Seed deadline
+  if (!Storage.get('deadlines')) {
+    const now = Date.now();
+    Storage.set('deadlines', [
+      { id: 'd1', nama: 'Kirim Proposal Class Meeting', tanggal: now + 86400000 * 2, doneBy: [] },
+      { id: 'd2', nama: 'Laporan Kas Bulan Mei', tanggal: now + 86400000 * 5, doneBy: [] },
+    ]);
+  }
+  // Seed laporan
+  if (!Storage.get('laporan')) {
+    Storage.set('laporan', [
+      { id: 'l1', judul: 'Laporan Desain Poster Minggu 1', isi: 'Sudah selesai 2 varian poster.', user: 'Dian PDD', divisi: 'PDD', waktu: Date.now() - 86400000 },
+    ]);
+  }
+  // Seed chat/keluhan
+  if (!Storage.get('keluhan')) {
+    Storage.set('keluhan', [
+      { id: 'c1', dari: 'Warga Sekolah', pesan: 'Tolong ada fasilitas kantin yang lebih bersih.', waktu: Date.now() - 86400000, balasan: [{ admin: 'Sari Sekretaris', teks: 'Terima kasih masukannya! Akan kami sampaikan ke pihak sekolah.', waktu: Date.now() - 3600000 * 10 }] },
+    ]);
+  }
+}
+
+/* ====================================================
+   GLOBAL STATE
+==================================================== */
+let currentUser = null;        // user yang login
+let currentFeedTab = 'beranda'; // tab feed aktif
+let imgBase64 = null;           // gambar upload PDD
+
+/* ====================================================
+   INISIALISASI APP
+==================================================== */
+window.addEventListener('DOMContentLoaded', () => {
+  seedDB();
+  // Cek apakah ada sesi tersimpan
+  const saved = Storage.get('session');
+  if (saved) {
+    currentUser = saved;
+    showScreen('dashboard');
+    renderDashboard();
+  } else {
+    showScreen('auth');
+  }
+});
+
+/* ====================================================
+   SHOW / HIDE SCREEN
+==================================================== */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function goBack(screen) {
+  showScreen(screen);
+}
+
+/* ====================================================
+   AUTH — Tab switch
+==================================================== */
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => {
+    t.classList.toggle('active', (tab==='login' ? i===0 : i===1));
+  });
+  document.getElementById('form-login').classList.toggle('active', tab==='login');
+  document.getElementById('form-register').classList.toggle('active', tab==='register');
+}
+
+/* ====================================================
+   AUTH — Role change handler (tampilkan kode verifikasi)
+==================================================== */
+function handleRoleChange() {
+  const role = document.getElementById('reg-role').value;
+  const needsCode = ['ketua','bendahara','sekretaris','pdd'].includes(role);
+  const needsDivisi = ['ketua','osis','bendahara','sekretaris','pdd'].includes(role);
+  document.getElementById('role-code-wrap').style.display = needsCode ? 'block' : 'none';
+  document.getElementById('divisi-wrap').style.display = needsDivisi ? 'block' : 'none';
+}
+
+/* ====================================================
+   AUTH — ROLE CODES MAPPING
+==================================================== */
+const ROLE_CODES = {
+  ketua: 'PKWOSIS',
+  bendahara: 'BDOSIS',
+  sekretaris: 'SKOSIS',
+  pdd: 'PDDJAYA'
+};
+
+/* ====================================================
+   AUTH — REGISTER
+==================================================== */
+function doRegister() {
+  const name     = document.getElementById('reg-name').value.trim();
+  const username = document.getElementById('reg-username').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const role     = document.getElementById('reg-role').value;
+  const code     = document.getElementById('reg-code').value;
+  const divisi   = document.getElementById('reg-divisi') ? document.getElementById('reg-divisi').value : '-';
+
+  if (!name || !username || !password) return showToast('Lengkapi semua field!', 'error');
+  if (password.length < 6) return showToast('Password minimal 6 karakter!', 'error');
+
+  // Verifikasi kode khusus
+  if (ROLE_CODES[role] && code !== ROLE_CODES[role]) return showToast('Kode verifikasi role salah!', 'error');
+
+  const users = Storage.get('users') || [];
+  if (users.find(u => u.username === username)) return showToast('Username sudah digunakan!', 'error');
+
+  const newUser = {
+    id: 'u' + Date.now(),
+    name, username, password, role,
+    divisi: ['ketua','osis','bendahara','sekretaris','pdd'].includes(role) ? divisi : '-',
+    poin: 0
+  };
+  users.push(newUser);
+  Storage.set('users', users);
+  showToast('Akun berhasil dibuat! Silakan login.', 'success');
+  switchAuthTab('login');
+}
+
+/* ====================================================
+   AUTH — LOGIN
+==================================================== */
+function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const users = Storage.get('users') || [];
+  const user = users.find(u => u.username === username && u.password === password);
+  if (!user) return showToast('Username atau password salah!', 'error');
+
+  currentUser = user;
+  Storage.set('session', user);
+  showScreen('dashboard');
+  renderDashboard();
+  showToast(`Selamat datang, ${user.name}! 👋`, 'success');
+}
+
+/* ====================================================
+   AUTH — LOGOUT
+==================================================== */
+function doLogout() {
+  currentUser = null;
+  Storage.remove('session');
+  showScreen('auth');
+  showToast('Berhasil keluar. Sampai jumpa!', 'info');
+}
+
+/* ====================================================
+   DASHBOARD — Render utama
+==================================================== */
+function renderDashboard() {
+  if (!currentUser) return;
+
+  // Greeting
+  document.getElementById('greet-name').textContent = currentUser.name;
+  document.getElementById('greet-role').textContent = getRoleLabel(currentUser.role);
+
+  // OSIS Menu visibility
+  const isOSIS = ['osis','ketua','bendahara','sekretaris','pdd'].includes(currentUser.role);
+  document.getElementById('osis-menu-wrap').style.display = isOSIS ? 'block' : 'none';
+
+  if (isOSIS) renderOSISMenu();
+
+  // Feed
+  renderFeed(currentFeedTab);
+
+  // Nav aktif
+  activateNav('beranda');
+}
+
+/* ====================================================
+   ROLE LABEL
+==================================================== */
+function getRoleLabel(role) {
+  const labels = {
+    warga: '👤 Warga Sekolah',
+    osis: '🔵 Anggota OSIS',
+    ketua: '👑 Ketua/Wakil OSIS',
+    bendahara: '💰 Bendahara OSIS',
+    sekretaris: '📋 Sekretaris OSIS',
+    pdd: '📸 Bidang PDD',
+  };
+  return labels[role] || '👤 Warga Sekolah';
+}
+
+/* ====================================================
+   OSIS MENU — Build sesuai role
+==================================================== */
+function renderOSISMenu() {
+  const role = currentUser.role;
+  const grid = document.getElementById('osis-menu-grid');
+
+  // Menu dasar untuk semua OSIS
+  let menus = [
+    { icon:'fa-wallet',    label:'Keuangan',  color:'ic-green',  action:"openModal('modal-keuangan')" },
+    { icon:'fa-tasks',     label:'Tugas',     color:'ic-blue',   action:"openModal('modal-tugas')" },
+    { icon:'fa-clock',     label:'Deadline',  color:'ic-orange', action:"openModal('modal-deadline')" },
+    { icon:'fa-file-alt',  label:'Laporan',   color:'ic-indigo', action:"openModal('modal-laporan')" },
+    { icon:'fa-crown',     label:'Ranking',   color:'ic-purple', action:"openModal('modal-leaderboard')" },
+  ];
+
+  // Menu khusus Sekretaris
+  if (role === 'sekretaris' || role === 'ketua') {
+    menus.push({ icon:'fa-inbox', label:'Keluhan', color:'ic-teal', action:"openModal('modal-keluhan')" });
+  }
+  // Menu khusus PDD
+  if (role === 'pdd') {
+    menus.push({ icon:'fa-upload', label:'Upload Publikasi', color:'ic-pink', action:"openModal('modal-upload')" });
+  }
+
+  grid.innerHTML = menus.map(m => `
+    <div class="osis-menu-item" onclick="${m.action}">
+      <div class="osis-icon ${m.color}"><i class="fas ${m.icon}"></i></div>
+      <span>${m.label}</span>
+    </div>
+  `).join('');
+}
+
+/* ====================================================
+   FEED — Render artikel berdasarkan tab / search
+==================================================== */
+function switchFeedTab(tab, el) {
+  currentFeedTab = tab;
+  document.querySelectorAll('.feed-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('search-input').value = '';
+  renderFeed(tab);
+}
+
+function renderFeed(tab, query = '') {
+  const list = document.getElementById('feed-list');
+  let data = (Storage.get('artikel') || []).filter(a => {
+    const matchTab   = a.kategori === tab;
+    const matchQuery = query ? (a.judul.toLowerCase().includes(query) || a.deskripsi.toLowerCase().includes(query)) : true;
+    return matchTab && matchQuery;
+  }).sort((a,b) => b.waktu - a.waktu);
+
+  if (data.length === 0) {
+    list.innerHTML = `<div class="empty-state"><i class="fas fa-newspaper"></i><p>Belum ada artikel ${query ? 'yang sesuai pencarian' : 'di kategori ini'}.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = data.map(a => {
+    const isPDD = currentUser && currentUser.role === 'pdd';
+    const likes = (a.likes || []);
+    const hasLiked = currentUser && likes.includes(currentUser.id);
+    const comments = (a.comments || []);
+    return `
+    <div class="article-card">
+      <div onclick="showArtikel('${a.id}')">
+        ${a.gambar
+          ? `<img src="${a.gambar}" alt="${a.judul}" loading="lazy" />`
+          : `<div class="article-img-placeholder"><i class="fas fa-image"></i></div>`
+        }
+        <div class="article-body">
+          <span class="article-category cat-${a.kategori}">${a.kategori.charAt(0).toUpperCase()+a.kategori.slice(1)}</span>
+          <div class="article-title">${a.judul}</div>
+          <div class="article-desc">${a.deskripsi}</div>
+          <div class="article-meta">
+            <span><i class="fas fa-user"></i>${a.penulis}</span>
+            <span><i class="fas fa-clock"></i>${timeAgo(a.waktu)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="article-actions">
+        <button class="action-btn ${hasLiked ? 'liked' : ''}" onclick="toggleLike('${a.id}')">
+          <i class="fas fa-heart"></i><span>${likes.length}</span>
+        </button>
+        <button class="action-btn" onclick="showArtikel('${a.id}')">
+          <i class="fas fa-comment"></i><span>${comments.length}</span>
+        </button>
+        <button class="action-btn" onclick="shareArtikel('${a.id}')">
+          <i class="fas fa-share-alt"></i><span>Bagikan</span>
+        </button>
+        ${isPDD ? `
+        <button class="action-btn edit-btn" onclick="editArtikel('${a.id}')">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="action-btn delete-btn" onclick="deleteArtikel('${a.id}')">
+          <i class="fas fa-trash"></i>
+        </button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ====================================================
+   SEARCH — filter feed
+==================================================== */
+function doSearch() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  // Saat search, tampilkan dari semua kategori
+  const list = document.getElementById('feed-list');
+  let data = (Storage.get('artikel') || []).filter(a =>
+    a.judul.toLowerCase().includes(q) || a.deskripsi.toLowerCase().includes(q)
+  ).sort((a,b) => b.waktu - a.waktu);
+
+  if (!q) { renderFeed(currentFeedTab); return; }
+
+  if (data.length === 0) {
+    list.innerHTML = `<div class="empty-state"><i class="fas fa-search"></i><p>Tidak ada hasil untuk "<strong>${q}</strong>"</p></div>`;
+    return;
+  }
+  list.innerHTML = data.map(a => {
+    const isPDD = currentUser && currentUser.role === 'pdd';
+    const likes = a.likes || [];
+    const hasLiked = currentUser && likes.includes(currentUser.id);
+    return `
+    <div class="article-card">
+      <div onclick="showArtikel('${a.id}')">
+        ${a.gambar ? `<img src="${a.gambar}" alt="${a.judul}" />` : `<div class="article-img-placeholder"><i class="fas fa-image"></i></div>`}
+        <div class="article-body">
+          <span class="article-category cat-${a.kategori}">${a.kategori.charAt(0).toUpperCase()+a.kategori.slice(1)}</span>
+          <div class="article-title">${a.judul}</div>
+          <div class="article-desc">${a.deskripsi}</div>
+          <div class="article-meta">
+            <span><i class="fas fa-user"></i>${a.penulis}</span>
+            <span><i class="fas fa-clock"></i>${timeAgo(a.waktu)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="article-actions">
+        <button class="action-btn ${hasLiked?'liked':''}" onclick="toggleLike('${a.id}')"><i class="fas fa-heart"></i><span>${likes.length}</span></button>
+        <button class="action-btn" onclick="showArtikel('${a.id}')"><i class="fas fa-comment"></i><span>${(a.comments||[]).length}</span></button>
+        <button class="action-btn" onclick="shareArtikel('${a.id}')"><i class="fas fa-share-alt"></i><span>Bagikan</span></button>
+        ${isPDD ? `<button class="action-btn edit-btn" onclick="editArtikel('${a.id}')"><i class="fas fa-edit"></i></button>
+        <button class="action-btn delete-btn" onclick="deleteArtikel('${a.id}')"><i class="fas fa-trash"></i></button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ====================================================
+   SHOW ARTIKEL DETAIL (modal)
+==================================================== */
+function showArtikel(id) {
+  const data = (Storage.get('artikel') || []).find(a => a.id === id);
+  if (!data) return;
+  document.getElementById('artikel-modal-title').textContent = data.judul;
+  const img = document.getElementById('artikel-modal-img');
+  if (data.gambar) { img.src = data.gambar; img.style.display = 'block'; }
+  else { img.style.display = 'none'; }
+  document.getElementById('artikel-modal-cat').innerHTML = `<span class="article-category cat-${data.kategori}">${data.kategori}</span>`;
+  document.getElementById('artikel-modal-desc').textContent = data.deskripsi;
+  document.getElementById('artikel-modal-meta').innerHTML = `<i class="fas fa-user"></i> ${data.penulis} &nbsp;·&nbsp; <i class="fas fa-clock"></i> ${timeAgo(data.waktu)}`;
+
+  // Render comments
+  const comments = data.comments || [];
+  const hasLiked = currentUser && (data.likes||[]).includes(currentUser.id);
+  document.getElementById('artikel-modal-actions').innerHTML = `
+    <button class="action-btn ${hasLiked?'liked':''}" onclick="toggleLike('${data.id}');showArtikel('${data.id}')">
+      <i class="fas fa-heart"></i> ${(data.likes||[]).length} Suka
+    </button>
+    <button class="action-btn" onclick="shareArtikel('${data.id}')">
+      <i class="fas fa-share-alt"></i> Bagikan
+    </button>
+  `;
+  document.getElementById('artikel-modal-comments').innerHTML = comments.length === 0
+    ? '<div style="font-size:12px;color:var(--gray-400);text-align:center;padding:12px">Belum ada komentar. Jadilah yang pertama!</div>'
+    : comments.map(c => `
+        <div class="comment-item">
+          <div class="comment-author"><i class="fas fa-user-circle"></i> ${c.user}</div>
+          <div class="comment-text">${c.teks}</div>
+          <div class="comment-time">${timeAgo(c.waktu)}</div>
+        </div>`).join('');
+  document.getElementById('artikel-comment-id').value = data.id;
+  openModal('modal-artikel');
+}
+
+/* ====================================================
+   BOTTOM NAV — aktivasi tab
+==================================================== */
+function activateNav(tab) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-' + tab).classList.add('active');
+
+  if (tab === 'chat') {
+    // buka chat screen
+    renderChat();
+    showScreen('chat');
+    return;
+  }
+
+  // Kembali ke dashboard jika dari chat
+  if (document.getElementById('screen-dashboard').classList.contains('active') === false) {
+    showScreen('dashboard');
+  }
+
+  if (['beranda','prestasi','event'].includes(tab)) {
+    // Switch feed tab
+    const tabEl = document.querySelector(`.feed-tab[onclick*="${tab}"]`);
+    switchFeedTab(tab, tabEl);
+    // Scroll feed ke atas
+    document.getElementById('feed-area').scrollTop = 0;
+  }
+}
+
+/* ====================================================
+   CHAT / KELUHAN — Warga kirim pesan
+==================================================== */
+function renderChat() {
+  const container = document.getElementById('chat-messages');
+  const keluhan = Storage.get('keluhan') || [];
+
+  // Tampilkan keluhan milik user ini saja
+  const mine = keluhan.filter(k => k.dari === currentUser.name);
+
+  // Pesan sambutan
+  let html = `
+    <div class="msg-bubble received">
+      <strong>OSIS SMKS Santana 1</strong><br>
+      Halo! Kami siap menerima keluhan, saran, dan pertanyaan Anda. Silakan ketik pesan Anda. 😊
+      <div class="msg-meta">Admin OSIS</div>
+    </div>
+  `;
+
+  mine.forEach(k => {
+    html += `
+      <div class="msg-bubble sent">
+        ${k.pesan}
+        <div class="msg-meta">${timeAgo(k.waktu)}</div>
+      </div>
+    `;
+    if (k.balasan && k.balasan.length > 0) {
+      k.balasan.forEach(b => {
+        html += `
+          <div class="msg-bubble received">
+            <small style="font-weight:700;color:var(--blue-main)">${b.admin}</small><br>
+            ${b.teks}
+            <div class="msg-meta">${timeAgo(b.waktu)}</div>
+          </div>
+        `;
+      });
+    }
+  });
+
+  container.innerHTML = html;
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendChatMessage() {
+  const input = document.getElementById('chat-msg-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const keluhan = Storage.get('keluhan') || [];
+  keluhan.push({
+    id: 'c' + Date.now(),
+    dari: currentUser.name,
+    pesan: msg,
+    waktu: Date.now(),
+    balasan: []
+  });
+  Storage.set('keluhan', keluhan);
+  input.value = '';
+  renderChat();
+  showToast('Pesan terkirim! Sekretaris akan segera merespons.', 'success');
+}
+
+/* ====================================================
+   MODAL — KEUANGAN
+==================================================== */
+function openModal(id) {
+  // Render konten spesifik modal sebelum dibuka
+  if (id === 'modal-keuangan') { _grafikOpen = false; renderKeuangan(); }
+  if (id === 'modal-keuangan') {
+    const s = document.getElementById('grafik-section');
+    const b = document.getElementById('btn-toggle-grafik');
+    if (s) s.style.display = 'none';
+    if (b) b.innerHTML = '<i class="fas fa-chart-bar"></i> Lihat Grafik Keuangan';
+  }
+  if (id === 'modal-tugas') renderTugas();
+  if (id === 'modal-deadline') renderDeadline();
+  if (id === 'modal-laporan') renderLaporan();
+  if (id === 'modal-leaderboard') renderLeaderboard();
+  if (id === 'modal-keluhan') renderKeluhanAdmin();
+  if (id === 'modal-upload') resetUploadForm();
+
+  document.getElementById(id).classList.add('open');
+  // Also register new modal overlays for click-outside close
+  const overlay = document.getElementById(id);
+  if (overlay && !overlay._hasClickListener) {
+    overlay._hasClickListener = true;
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('open');
+    });
+  }
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Tutup modal jika klik overlay
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+
+/* ====================================================
+   KEUANGAN — Render laporan kas
+==================================================== */
+function renderKeuangan() {
+  const keu = Storage.get('keuangan') || [];
+  const totalIn  = keu.filter(k=>k.jenis==='pemasukan').reduce((s,k)=>s+k.nominal,0);
+  const totalOut = keu.filter(k=>k.jenis==='pengeluaran').reduce((s,k)=>s+k.nominal,0);
+  const saldo = totalIn - totalOut;
+
+  // Stats
+  document.getElementById('fin-stats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-val fin-in">Rp ${formatNum(totalIn)}</div>
+      <div class="stat-lbl"><i class="fas fa-arrow-up"></i> Total Pemasukan</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val fin-out">Rp ${formatNum(totalOut)}</div>
+      <div class="stat-lbl"><i class="fas fa-arrow-down"></i> Total Pengeluaran</div>
+    </div>
+    <div class="stat-card" style="grid-column:1/-1">
+      <div class="stat-val" style="color:var(--blue-main)">Rp ${formatNum(saldo)}</div>
+      <div class="stat-lbl"><i class="fas fa-wallet"></i> Saldo Kas OSIS</div>
+    </div>
+  `;
+
+  // Form tambah (bendahara saja)
+  document.getElementById('fin-form-wrap').style.display = currentUser.role === 'bendahara' ? 'block' : 'none';
+
+  // Tabel riwayat
+  if (keu.length === 0) {
+    document.getElementById('fin-table-wrap').innerHTML = `<div class="empty-state"><i class="fas fa-receipt"></i><p>Belum ada riwayat kas.</p></div>`;
+    return;
+  }
+  const sorted = [...keu].sort((a,b)=>b.waktu-a.waktu);
+  let tableHTML = `<table class="data-table">
+    <thead><tr><th>Keterangan</th><th>Jenis</th><th>Nominal</th><th>Waktu</th>`;
+  if (currentUser.role === 'bendahara') tableHTML += `<th></th>`;
+  tableHTML += `</tr></thead><tbody>`;
+  sorted.forEach(k => {
+    tableHTML += `<tr>
+      <td>${k.ket}</td>
+      <td><span class="${k.jenis==='pemasukan'?'fin-in':'fin-out'}">${k.jenis==='pemasukan'?'▲ Masuk':'▼ Keluar'}</span></td>
+      <td>Rp ${formatNum(k.nominal)}</td>
+      <td>${timeAgo(k.waktu)}</td>
+    `;
+    if (currentUser.role === 'bendahara') {
+      tableHTML += `<td><button class="btn-danger" onclick="hapusKeuangan('${k.id}')"><i class="fas fa-trash"></i></button></td>`;
+    }
+    tableHTML += `</tr>`;
+  });
+  tableHTML += `</tbody></table>`;
+  document.getElementById('fin-table-wrap').innerHTML = tableHTML;
+}
+
+function addKeuangan() {
+  if (currentUser.role !== 'bendahara') return showToast('Hanya Bendahara yang bisa menambah kas!', 'error');
+  const jenis   = document.getElementById('fin-jenis').value;
+  const ket     = document.getElementById('fin-ket').value.trim();
+  const nominal = parseInt(document.getElementById('fin-nominal').value);
+  if (!ket || !nominal || nominal <= 0) return showToast('Lengkapi data dengan benar!', 'error');
+
+  const keu = Storage.get('keuangan') || [];
+  keu.push({ id:'k'+Date.now(), jenis, ket, nominal, waktu:Date.now(), user: currentUser.name });
+  Storage.set('keuangan', keu);
+  document.getElementById('fin-ket').value = '';
+  document.getElementById('fin-nominal').value = '';
+  renderKeuangan();
+  showToast('Transaksi berhasil ditambahkan!', 'success');
+}
+
+function hapusKeuangan(id) {
+  if (currentUser.role !== 'bendahara') return;
+  let keu = Storage.get('keuangan') || [];
+  keu = keu.filter(k => k.id !== id);
+  Storage.set('keuangan', keu);
+  renderKeuangan();
+  showToast('Transaksi dihapus.', 'info');
+}
+
+/* ====================================================
+   TUGAS — Render daftar tugas
+==================================================== */
+function renderTugas() {
+  const isKetua = currentUser.role === 'ketua';
+  document.getElementById('tugas-form-wrap').style.display = isKetua ? 'block' : 'none';
+
+  const tugas = Storage.get('tugas') || [];
+  if (tugas.length === 0) {
+    document.getElementById('tugas-list').innerHTML = `<div class="empty-state"><i class="fas fa-tasks"></i><p>Belum ada tugas.</p></div>`;
+    return;
+  }
+  document.getElementById('tugas-list').innerHTML = tugas.map(t => `
+    <div class="deadline-item">
+      <div class="deadline-info" style="flex:1">
+        <div class="task">${t.judul}</div>
+        <div class="due"><span class="tag tag-blue">${t.divisi}</span> &nbsp; ${t.deskripsi}</div>
+        <div style="font-size:10px;color:var(--gray-400);margin-top:4px">${timeAgo(t.waktu)}</div>
+      </div>
+      ${isKetua ? `<button class="btn-danger" onclick="hapusTugas('${t.id}')"><i class="fas fa-trash"></i></button>` : ''}
+    </div>
+  `).join('');
+}
+
+function addTugas() {
+  if (currentUser.role !== 'ketua') return showToast('Hanya Ketua/Wakil yang bisa menambah tugas!', 'error');
+  const judul  = document.getElementById('tugas-judul').value.trim();
+  const divisi = document.getElementById('tugas-divisi').value;
+  const desc   = document.getElementById('tugas-desc').value.trim();
+  if (!judul) return showToast('Judul tugas wajib diisi!', 'error');
+
+  const tugas = Storage.get('tugas') || [];
+  tugas.push({ id:'t'+Date.now(), judul, divisi, deskripsi:desc||'-', waktu:Date.now() });
+  Storage.set('tugas', tugas);
+  document.getElementById('tugas-judul').value = '';
+  document.getElementById('tugas-desc').value = '';
+  renderTugas();
+  showToast('Tugas berhasil ditambahkan!', 'success');
+}
+
+function hapusTugas(id) {
+  if (currentUser.role !== 'ketua') return;
+  let tugas = Storage.get('tugas') || [];
+  tugas = tugas.filter(t => t.id !== id);
+  Storage.set('tugas', tugas);
+  renderTugas();
+  showToast('Tugas dihapus.', 'info');
+}
+
+/* ====================================================
+   DEADLINE — Render & ceklis
+==================================================== */
+function renderDeadline() {
+  const isKetua = currentUser.role === 'ketua';
+  document.getElementById('deadline-form-wrap').style.display = isKetua ? 'block' : 'none';
+
+  const deadlines = Storage.get('deadlines') || [];
+  if (deadlines.length === 0) {
+    document.getElementById('deadline-list').innerHTML = `<div class="empty-state"><i class="fas fa-clock"></i><p>Belum ada deadline.</p></div>`;
+    return;
+  }
+
+  document.getElementById('deadline-list').innerHTML = deadlines.map(d => {
+    const done = (d.doneBy || []).includes(currentUser.id);
+    const overdue = d.tanggal < Date.now() && !done;
+    return `
+      <div class="deadline-item">
+        <div class="deadline-check ${done?'done':''}" onclick="ceklisDeadline('${d.id}')">
+          ${done ? '<i class="fas fa-check" style="font-size:11px"></i>' : ''}
+        </div>
+        <div class="deadline-info">
+          <div class="task ${done?'':''}${overdue?' deadline-overdue':''}">${d.nama}</div>
+          <div class="due ${overdue?'deadline-overdue':''}">
+            <i class="fas fa-calendar-alt"></i> ${new Date(d.tanggal).toLocaleString('id-ID')}
+            ${overdue ? ' <span style="font-weight:700">⚠ Terlambat!</span>' : ''}
+            ${done ? ' <span style="color:var(--success);font-weight:700">✓ Selesai (+1 Poin)</span>' : ''}
+          </div>
+        </div>
+        ${isKetua ? `<button class="btn-danger" onclick="hapusDeadline('${d.id}')"><i class="fas fa-trash"></i></button>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function ceklisDeadline(id) {
+  // Hanya anggota OSIS yang bisa ceklis
+  if (!['osis','ketua','bendahara','sekretaris','pdd'].includes(currentUser.role)) return;
+
+  let deadlines = Storage.get('deadlines') || [];
+  const dl = deadlines.find(d => d.id === id);
+  if (!dl) return;
+
+  if ((dl.doneBy||[]).includes(currentUser.id)) {
+    showToast('Sudah pernah diceklis!', 'info'); return;
+  }
+  dl.doneBy = [...(dl.doneBy||[]), currentUser.id];
+  Storage.set('deadlines', deadlines);
+
+  // Tambah +1 poin ke user
+  tambahPoin(currentUser.id, 1);
+  renderDeadline();
+  showToast('+1 Poin diperoleh dari ceklis deadline! 🎉', 'success');
+}
+
+function addDeadline() {
+  if (currentUser.role !== 'ketua') return showToast('Hanya Ketua/Wakil yang bisa menambah deadline!', 'error');
+  const nama = document.getElementById('dl-nama').value.trim();
+  const tgl  = document.getElementById('dl-tanggal').value;
+  if (!nama || !tgl) return showToast('Lengkapi data deadline!', 'error');
+
+  const dl = Storage.get('deadlines') || [];
+  dl.push({ id:'d'+Date.now(), nama, tanggal: new Date(tgl).getTime(), doneBy:[] });
+  Storage.set('deadlines', dl);
+  document.getElementById('dl-nama').value = '';
+  renderDeadline();
+  showToast('Deadline berhasil ditambahkan!', 'success');
+}
+
+function hapusDeadline(id) {
+  if (currentUser.role !== 'ketua') return;
+  let dl = Storage.get('deadlines') || [];
+  dl = dl.filter(d => d.id !== id);
+  Storage.set('deadlines', dl);
+  renderDeadline();
+  showToast('Deadline dihapus.', 'info');
+}
+
+/* ====================================================
+   LAPORAN TUGAS — kirim & lihat
+==================================================== */
+function renderLaporan() {
+  const laporan = Storage.get('laporan') || [];
+  if (laporan.length === 0) {
+    document.getElementById('laporan-list').innerHTML = `<div class="empty-state"><i class="fas fa-file-alt"></i><p>Belum ada laporan.</p></div>`;
+    return;
+  }
+  document.getElementById('laporan-list').innerHTML = [...laporan].reverse().map(l => {
+    const isAuthor = currentUser && l.user === currentUser.name;
+    const isKetua  = currentUser && currentUser.role === 'ketua';
+    const canEdit   = isAuthor;
+    const canDelete = isAuthor || isKetua;
+    return `
+      <div class="complaint-card">
+        <div class="complaint-from"><i class="fas fa-user"></i> ${l.user} <span class="tag tag-blue" style="margin-left:4px">${l.divisi}</span></div>
+        <div style="font-size:13px;font-weight:700;color:var(--gray-800);margin-bottom:4px">${l.judul}</div>
+        <div class="complaint-msg">${l.isi}</div>
+        <div class="complaint-time"><i class="fas fa-clock"></i> ${timeAgo(l.waktu)}${l.diedit ? ' &nbsp;·&nbsp; <i class="fas fa-pencil-alt"></i> Diedit' : ''}</div>
+        ${(canEdit || canDelete) ? `
+        <div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-100)">
+          ${canEdit ? `<button class="btn-outline" style="padding:6px 12px;font-size:11px" onclick="editLaporan('${l.id}')"><i class="fas fa-edit"></i> Edit</button>` : ''}
+          ${canDelete ? `<button class="btn-danger" style="padding:6px 12px;font-size:11px" onclick="hapusLaporan('${l.id}')"><i class="fas fa-trash"></i> Hapus</button>` : ''}
+        </div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function kirimLaporan() {
+  const judul = document.getElementById('lap-judul').value.trim();
+  const isi   = document.getElementById('lap-isi').value.trim();
+  if (!judul || !isi) return showToast('Lengkapi judul dan isi laporan!', 'error');
+
+  const laporan = Storage.get('laporan') || [];
+  laporan.push({ id:'l'+Date.now(), judul, isi, user: currentUser.name, divisi: currentUser.divisi, waktu: Date.now() });
+  Storage.set('laporan', laporan);
+
+  // +1 poin
+  tambahPoin(currentUser.id, 1);
+
+  document.getElementById('lap-judul').value = '';
+  document.getElementById('lap-isi').value = '';
+  renderLaporan();
+  showToast('Laporan berhasil dikirim! +1 Poin diperoleh 🎉', 'success');
+}
+
+/* ====================================================
+   LEADERBOARD — Render ranking poin
+==================================================== */
+function renderLeaderboard() {
+  const users = (Storage.get('users') || [])
+    .filter(u => ['osis','ketua','bendahara','sekretaris','pdd'].includes(u.role) && (u.poin||0) > 0)
+    .sort((a,b) => (b.poin||0) - (a.poin||0));
+
+  const isKetua = currentUser.role === 'ketua';
+  document.getElementById('poin-mod-wrap').style.display = isKetua ? 'block' : 'none';
+
+  if (isKetua) {
+    // Populate dropdown moderasi
+    const select = document.getElementById('mod-user');
+    select.innerHTML = users.map(u => `<option value="${u.id}">${u.name} (${u.poin||0} poin)</option>`).join('');
+  }
+
+  if (users.length === 0) {
+    document.getElementById('leaderboard-list').innerHTML = `<div class="empty-state"><i class="fas fa-crown"></i><p>Belum ada data.</p></div>`;
+    return;
+  }
+
+  document.getElementById('leaderboard-list').innerHTML = users.map((u,i) => {
+    const rankClass = i===0?'r1':i===1?'r2':i===2?'r3':'rn';
+    return `
+      <div class="lb-item">
+        <div class="lb-rank ${rankClass}">${i+1}</div>
+        <div class="lb-name">
+          ${u.name}<br>
+          <small style="font-size:10px;color:var(--gray-400)">${u.divisi}</small>
+        </div>
+        <div class="lb-pts">${u.poin||0} pts</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function tambahPoin(userId, jumlah) {
+  const users = Storage.get('users') || [];
+  const u = users.find(u => u.id === userId);
+  if (!u) return;
+  u.poin = (u.poin || 0) + jumlah;
+  Storage.set('users', users);
+  // Update sesi jika user adalah dirinya sendiri
+  if (currentUser.id === userId) {
+    currentUser.poin = u.poin;
+    Storage.set('session', currentUser);
+  }
+}
+
+function modPoin() {
+  if (currentUser.role !== 'ketua') return showToast('Hanya Ketua/Wakil yang bisa moderasi poin!', 'error');
+  const userId = document.getElementById('mod-user').value;
+  const jumlah = parseInt(document.getElementById('mod-poin').value);
+  if (isNaN(jumlah)) return showToast('Masukkan angka poin yang valid!', 'error');
+
+  tambahPoin(userId, jumlah);
+  renderLeaderboard();
+  document.getElementById('mod-poin').value = '';
+  showToast(`Poin berhasil diupdate!`, 'success');
+}
+
+/* ====================================================
+   KELUHAN — Admin panel sekretaris
+==================================================== */
+function renderKeluhanAdmin() {
+  const keluhan = Storage.get('keluhan') || [];
+  if (keluhan.length === 0) {
+    document.getElementById('keluhan-list').innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Belum ada keluhan masuk.</p></div>`;
+    document.getElementById('balas-select').innerHTML = '';
+    return;
+  }
+
+  document.getElementById('keluhan-list').innerHTML = [...keluhan].reverse().map(k => `
+    <div class="complaint-card">
+      <div class="complaint-from"><i class="fas fa-user"></i> ${k.dari}</div>
+      <div class="complaint-msg">${k.pesan}</div>
+      <div class="complaint-time"><i class="fas fa-clock"></i> ${timeAgo(k.waktu)}</div>
+      ${k.balasan && k.balasan.length > 0 ? `
+        <div class="complaint-replies">
+          ${k.balasan.map(b=>`
+            <div class="reply-bubble">
+              <div class="reply-admin-label"><i class="fas fa-reply"></i> ${b.admin}</div>
+              ${b.teks}
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+
+  // Dropdown pilih keluhan untuk dibalas
+  document.getElementById('balas-select').innerHTML = keluhan.map(k =>
+    `<option value="${k.id}">${k.dari}: ${k.pesan.substring(0,40)}...</option>`
+  ).join('');
+}
+
+function balasKeluhan() {
+  if (!['sekretaris','ketua'].includes(currentUser.role)) return showToast('Hanya Sekretaris yang bisa membalas!', 'error');
+  const id  = document.getElementById('balas-select').value;
+  const teks = document.getElementById('balas-isi').value.trim();
+  if (!teks) return showToast('Isi balasan dulu!', 'error');
+
+  const keluhan = Storage.get('keluhan') || [];
+  const k = keluhan.find(k => k.id === id);
+  if (!k) return;
+  k.balasan = [...(k.balasan||[]), { admin: currentUser.name, teks, waktu: Date.now() }];
+  Storage.set('keluhan', keluhan);
+  document.getElementById('balas-isi').value = '';
+  renderKeluhanAdmin();
+  showToast('Balasan berhasil dikirim!', 'success');
+}
+
+/* ====================================================
+   UPLOAD PUBLIKASI — PDD
+==================================================== */
+function resetUploadForm() {
+  document.getElementById('pub-judul').value = '';
+  document.getElementById('pub-desc').value = '';
+  document.getElementById('pub-img-input').value = '';
+  document.getElementById('pub-preview').style.display = 'none';
+  document.getElementById('upload-icon').style.display = 'block';
+  document.getElementById('upload-hint').textContent = 'Klik untuk memilih gambar dari galeri';
+  imgBase64 = null;
+}
+
+// Konversi gambar ke base64 menggunakan FileReader
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) {
+    showToast('Ukuran gambar maksimal 3MB!', 'error'); return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    imgBase64 = e.target.result; // Base64 string
+    const preview = document.getElementById('pub-preview');
+    preview.src = imgBase64;
+    preview.style.display = 'block';
+    document.getElementById('upload-icon').style.display = 'none';
+    document.getElementById('upload-hint').textContent = `✅ ${file.name}`;
+  };
+  reader.readAsDataURL(file); // Baca sebagai Data URL (base64)
+}
+
+function uploadPublikasi() {
+  if (currentUser.role !== 'pdd') return showToast('Hanya bidang PDD yang bisa mempublikasikan!', 'error');
+  const kategori = document.getElementById('pub-kategori').value;
+  const judul    = document.getElementById('pub-judul').value.trim();
+  const desc     = document.getElementById('pub-desc').value.trim();
+  if (!judul || !desc) return showToast('Lengkapi judul dan deskripsi!', 'error');
+
+  const artikel = Storage.get('artikel') || [];
+  artikel.push({
+    id: 'a' + Date.now(),
+    kategori, judul,
+    deskripsi: desc,
+    gambar: imgBase64 || null,
+    penulis: currentUser.name + ' (PDD)',
+    waktu: Date.now()
+  });
+  Storage.set('artikel', artikel);
+  resetUploadForm();
+  closeModal('modal-upload');
+  renderFeed(kategori);
+  // Switch ke tab artikel baru
+  const tabEl = document.querySelector(`.feed-tab[onclick*="${kategori}"]`);
+  if (tabEl) switchFeedTab(kategori, tabEl);
+  showToast('Artikel berhasil dipublikasikan! 🎉', 'success');
+}
+
+/* ====================================================
+   UTILITY — Format waktu relatif
+==================================================== */
+function timeAgo(timestamp) {
+  const diff = Date.now() - timestamp;
+  const mins  = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days  = Math.floor(diff / 86400000);
+  if (mins < 1) return 'Baru saja';
+  if (mins < 60) return `${mins} mnt lalu`;
+  if (hours < 24) return `${hours} jam lalu`;
+  if (days < 7) return `${days} hari lalu`;
+  return new Date(timestamp).toLocaleDateString('id-ID');
+}
+
+/* ====================================================
+   UTILITY — Format angka
+==================================================== */
+function formatNum(n) {
+  return n.toLocaleString('id-ID');
+}
+
+/* ====================================================
+   TOAST NOTIFICATION
+==================================================== */
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const icons = { success:'fa-check-circle', error:'fa-times-circle', info:'fa-info-circle' };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<i class="fas ${icons[type]||icons.info}"></i>${msg}`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.remove(); }, 3000);
+}
+
+/* ====================================================
+   LIKE — Toggle like artikel
+==================================================== */
+function toggleLike(artikelId) {
+  if (!currentUser) return;
+  const artikel = Storage.get('artikel') || [];
+  const a = artikel.find(x => x.id === artikelId);
+  if (!a) return;
+  a.likes = a.likes || [];
+  const idx = a.likes.indexOf(currentUser.id);
+  if (idx >= 0) a.likes.splice(idx, 1);
+  else a.likes.push(currentUser.id);
+  Storage.set('artikel', artikel);
+  renderFeed(currentFeedTab);
+}
+
+/* ====================================================
+   KOMENTAR — Kirim komentar
+==================================================== */
+function kirimKomentar() {
+  const id = document.getElementById('artikel-comment-id').value;
+  const teks = document.getElementById('artikel-comment-input').value.trim();
+  if (!teks) return showToast('Tulis komentar dulu!', 'error');
+  if (!currentUser) return showToast('Login dulu ya!', 'error');
+
+  const artikel = Storage.get('artikel') || [];
+  const a = artikel.find(x => x.id === id);
+  if (!a) return;
+  a.comments = a.comments || [];
+  a.comments.push({ user: currentUser.name, teks, waktu: Date.now() });
+  Storage.set('artikel', artikel);
+  document.getElementById('artikel-comment-input').value = '';
+  showArtikel(id);
+  renderFeed(currentFeedTab);
+  showToast('Komentar berhasil dikirim!', 'success');
+}
+
+/* ====================================================
+   SHARE — Bagikan artikel
+==================================================== */
+function shareArtikel(id) {
+  const a = (Storage.get('artikel')||[]).find(x => x.id === id);
+  if (!a) return;
+  const text = `📰 ${a.judul}\n\n${a.deskripsi.substring(0,120)}...\n\n— SANTANA System SMKS Santana 1 Cibatu`;
+  if (navigator.share) {
+    navigator.share({ title: a.judul, text }).catch(()=>{});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast('Teks berita disalin ke clipboard!', 'success'));
+  } else {
+    showToast('Fitur share tidak didukung browser ini.', 'info');
+  }
+}
+
+/* ====================================================
+   EDIT & HAPUS LAPORAN TUGAS
+==================================================== */
+function editLaporan(id) {
+  const laporan = Storage.get('laporan') || [];
+  const l = laporan.find(x => x.id === id);
+  if (!l) return;
+  if (currentUser.name !== l.user) return showToast('Hanya pengirim yang bisa mengedit!', 'error');
+  document.getElementById('edit-laporan-id').value = id;
+  document.getElementById('edit-lap-judul').value = l.judul;
+  document.getElementById('edit-lap-isi').value = l.isi;
+  openModal('modal-edit-laporan');
+}
+
+function simpanEditLaporan() {
+  const id    = document.getElementById('edit-laporan-id').value;
+  const judul = document.getElementById('edit-lap-judul').value.trim();
+  const isi   = document.getElementById('edit-lap-isi').value.trim();
+  if (!judul || !isi) return showToast('Lengkapi judul dan isi laporan!', 'error');
+
+  const laporan = Storage.get('laporan') || [];
+  const l = laporan.find(x => x.id === id);
+  if (!l) return;
+  if (currentUser.name !== l.user) return showToast('Tidak punya izin!', 'error');
+
+  l.judul  = judul;
+  l.isi    = isi;
+  l.diedit = Date.now();
+  Storage.set('laporan', laporan);
+  closeModal('modal-edit-laporan');
+  renderLaporan();
+  showToast('Laporan berhasil diperbarui! ✏️', 'success');
+}
+
+function hapusLaporan(id) {
+  const laporan = Storage.get('laporan') || [];
+  const l = laporan.find(x => x.id === id);
+  if (!l) return;
+  const isAuthor = currentUser.name === l.user;
+  const isKetua  = currentUser.role === 'ketua';
+  if (!isAuthor && !isKetua) return showToast('Tidak punya izin menghapus!', 'error');
+  if (!confirm('Yakin ingin menghapus laporan ini?')) return;
+
+  Storage.set('laporan', laporan.filter(x => x.id !== id));
+  // Kurangi poin hanya jika pengirim yang hapus sendiri
+  if (isAuthor) tambahPoin(currentUser.id, -1);
+  renderLaporan();
+  showToast('Laporan berhasil dihapus.', 'info');
+}
+
+/* ====================================================
+   GRAFIK KEUANGAN — Canvas bar chart
+==================================================== */
+let _grafikOpen   = false;
+let _grafikPeriod = 'mingguan';
+
+function toggleGrafik() {
+  _grafikOpen = !_grafikOpen;
+  const section = document.getElementById('grafik-section');
+  const btn     = document.getElementById('btn-toggle-grafik');
+  section.style.display = _grafikOpen ? 'block' : 'none';
+  btn.innerHTML = _grafikOpen
+    ? '<i class="fas fa-chart-bar"></i> Sembunyikan Grafik'
+    : '<i class="fas fa-chart-bar"></i> Lihat Grafik Keuangan';
+  if (_grafikOpen) {
+    // Aktifkan tab mingguan sebagai default
+    showGrafik(_grafikPeriod, document.getElementById('gtab-' + _grafikPeriod));
+  }
+}
+
+function showGrafik(period, el) {
+  _grafikPeriod = period;
+
+  // Update styling tab
+  document.querySelectorAll('.grafik-tab-btn').forEach(b => {
+    b.style.background    = 'var(--white)';
+    b.style.color         = 'var(--gray-600)';
+    b.style.borderColor   = 'var(--gray-200)';
+  });
+  if (el) {
+    el.style.background  = 'var(--blue-main)';
+    el.style.color       = '#ffffff';
+    el.style.borderColor = 'var(--blue-main)';
+  }
+
+  const keu    = Storage.get('keuangan') || [];
+  const canvas = document.getElementById('grafik-canvas');
+  const ctx    = canvas.getContext('2d');
+
+  // Sesuaikan ukuran canvas dengan tampilan nyata
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = rect.width  || 360;
+  canvas.height = 200;
+
+  let labels = [], inData = [], outData = [];
+  const now = new Date();
+
+  if (period === 'mingguan') {
+    // 7 hari terakhir
+    for (let i = 6; i >= 0; i--) {
+      const d   = new Date(now); d.setDate(d.getDate() - i); d.setHours(0,0,0,0);
+      const end = new Date(d);   end.setDate(end.getDate() + 1);
+      labels.push(['Min','Sen','Sel','Rab','Kam','Jum','Sab'][d.getDay()]);
+      inData.push(keu.filter(k=>k.jenis==='pemasukan'&&k.waktu>=d.getTime()&&k.waktu<end.getTime()).reduce((s,k)=>s+k.nominal,0));
+      outData.push(keu.filter(k=>k.jenis==='pengeluaran'&&k.waktu>=d.getTime()&&k.waktu<end.getTime()).reduce((s,k)=>s+k.nominal,0));
+    }
+  } else if (period === 'bulanan') {
+    // 4 minggu terakhir
+    for (let i = 3; i >= 0; i--) {
+      const end   = new Date(now); end.setDate(end.getDate() - i * 7); end.setHours(23,59,59,999);
+      const start = new Date(end); start.setDate(start.getDate() - 6); start.setHours(0,0,0,0);
+      labels.push('Mg ' + (4 - i));
+      inData.push(keu.filter(k=>k.jenis==='pemasukan'&&k.waktu>=start.getTime()&&k.waktu<=end.getTime()).reduce((s,k)=>s+k.nominal,0));
+      outData.push(keu.filter(k=>k.jenis==='pengeluaran'&&k.waktu>=start.getTime()&&k.waktu<=end.getTime()).reduce((s,k)=>s+k.nominal,0));
+    }
+  } else {
+    // 12 bulan tahun ini
+    const BLN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    for (let m = 0; m < 12; m++) {
+      const start = new Date(now.getFullYear(), m, 1);
+      const end   = new Date(now.getFullYear(), m + 1, 0, 23, 59, 59, 999);
+      labels.push(BLN[m]);
+      inData.push(keu.filter(k=>k.jenis==='pemasukan'&&k.waktu>=start.getTime()&&k.waktu<=end.getTime()).reduce((s,k)=>s+k.nominal,0));
+      outData.push(keu.filter(k=>k.jenis==='pengeluaran'&&k.waktu>=start.getTime()&&k.waktu<=end.getTime()).reduce((s,k)=>s+k.nominal,0));
+    }
+  }
+
+  _drawBarChart(ctx, canvas.width, canvas.height, labels, inData, outData);
+}
+
+function _drawBarChart(ctx, W, H, labels, inData, outData) {
+  const pad  = { top: 28, right: 10, bottom: 34, left: 46 };
+  const cW   = W - pad.left - pad.right;
+  const cH   = H - pad.top  - pad.bottom;
+  const n    = labels.length;
+  const maxV = Math.max(...inData, ...outData, 1000);
+
+  // Tentukan step Y yang rapi
+  const rough   = maxV / 4;
+  const mag     = Math.pow(10, Math.floor(Math.log10(rough)));
+  const yStep   = Math.ceil(rough / mag) * mag;
+  const yMax    = yStep * 4;
+
+  // Background
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid & label Y
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i <= 4; i++) {
+    const y   = pad.top + cH - (i / 4) * cH;
+    const val = (i / 4) * yMax;
+
+    ctx.strokeStyle = i === 0 ? '#cbd5e1' : '#e2e8f0';
+    ctx.lineWidth   = i === 0 ? 1.5 : 1;
+    ctx.setLineDash(i === 0 ? [] : [3, 3]);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle   = '#94a3b8';
+    ctx.font        = '9px sans-serif';
+    ctx.textAlign   = 'right';
+    const lbl = val >= 1000000 ? (val/1000000).toFixed(1)+'jt' : val >= 1000 ? (val/1000).toFixed(0)+'rb' : val;
+    ctx.fillText(lbl, pad.left - 4, y);
+  }
+
+  // Bars
+  const groupW = cW / n;
+  const barW   = Math.max(Math.min(groupW * 0.3, 16), 5);
+  const gap    = barW * 0.25;
+
+  for (let i = 0; i < n; i++) {
+    const cx = pad.left + i * groupW + groupW / 2;
+
+    // Pemasukan (hijau)
+    const inH = Math.max((inData[i] / yMax) * cH, inData[i] > 0 ? 2 : 0);
+    if (inH > 0) {
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath();
+      const ix = cx - barW - gap / 2;
+      const iy = pad.top + cH - inH;
+      _roundRect(ctx, ix, iy, barW, inH, 3);
+      ctx.fill();
+    }
+
+    // Pengeluaran (merah)
+    const outH = Math.max((outData[i] / yMax) * cH, outData[i] > 0 ? 2 : 0);
+    if (outH > 0) {
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      const ox = cx + gap / 2;
+      const oy = pad.top + cH - outH;
+      _roundRect(ctx, ox, oy, barW, outH, 3);
+      ctx.fill();
+    }
+
+    // Label X
+    ctx.fillStyle   = '#64748b';
+    ctx.font        = '9px sans-serif';
+    ctx.textAlign   = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(labels[i], cx, pad.top + cH + 6);
+  }
+}
+
+function _roundRect(ctx, x, y, w, h, r) {
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(x, y, w, h, [r, r, 0, 0]);
+  } else {
+    ctx.rect(x, y, w, h);
+  }
+}
+
+
+function editArtikel(id) {
+  if (currentUser.role !== 'pdd') return showToast('Hanya PDD yang bisa mengedit!', 'error');
+  const a = (Storage.get('artikel')||[]).find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('edit-artikel-id').value = id;
+  document.getElementById('edit-pub-kategori').value = a.kategori;
+  document.getElementById('edit-pub-judul').value = a.judul;
+  document.getElementById('edit-pub-desc').value = a.deskripsi;
+  openModal('modal-edit-artikel');
+}
+
+function simpanEditArtikel() {
+  if (currentUser.role !== 'pdd') return;
+  const id = document.getElementById('edit-artikel-id').value;
+  const judul = document.getElementById('edit-pub-judul').value.trim();
+  const desc  = document.getElementById('edit-pub-desc').value.trim();
+  const kat   = document.getElementById('edit-pub-kategori').value;
+  if (!judul || !desc) return showToast('Lengkapi judul dan deskripsi!', 'error');
+
+  const artikel = Storage.get('artikel') || [];
+  const a = artikel.find(x => x.id === id);
+  if (!a) return;
+  a.judul = judul; a.deskripsi = desc; a.kategori = kat;
+  Storage.set('artikel', artikel);
+  closeModal('modal-edit-artikel');
+  renderFeed(currentFeedTab);
+  showToast('Artikel berhasil diperbarui!', 'success');
+}
+
+/* ====================================================
+   DELETE ARTIKEL — PDD only
+==================================================== */
+function deleteArtikel(id) {
+  if (currentUser.role !== 'pdd') return showToast('Hanya PDD yang bisa menghapus!', 'error');
+  if (!confirm('Yakin ingin menghapus artikel ini?')) return;
+  let artikel = Storage.get('artikel') || [];
+  artikel = artikel.filter(a => a.id !== id);
+  Storage.set('artikel', artikel);
+  renderFeed(currentFeedTab);
+  showToast('Artikel berhasil dihapus!', 'success');
+}
+</script>
+
+</body>
+</html>
